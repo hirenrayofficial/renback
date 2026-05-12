@@ -102,7 +102,10 @@ export async function GET(req) {
       const getSlug = await blog.findOne({ blog_slug: slug, is_active: true });
 
       if (!getSlug)
-        return NextResponse.json({ message: "Not found" }, { status: 404 });
+        return NextResponse.json(
+          { message: "Not found" },
+          { status: 404, headers: CORS_HEADERS },
+        );
 
       const responseData = { getSlug };
 
