@@ -2,12 +2,13 @@ import connectDB from "@/app/db/mongo/db";
 import blog from "@/app/db/schema/blog";
 import { NextResponse } from "next/server";
 
+const url = process.env.CORS_URL
+
 const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "https://roadtocode.blog.hirenray.rest",
+  "Access-Control-Allow-Origin": `${url}`,
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
-
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
