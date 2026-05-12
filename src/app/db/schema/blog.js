@@ -22,6 +22,9 @@ const blogSchema = mongoose.Schema(
     blog_author: {
       type: String,
     },
+    author_id:{
+      type:String,
+    },
     is_active: {
       type: Boolean,
       require: true,

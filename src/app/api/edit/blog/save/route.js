@@ -1,8 +1,8 @@
-import blog from '@/app/db/schema/blog'
+import blog from "@/app/db/schema/blog";
 import { NextResponse } from "next/server";
 import connectDB from "@/app/db/mongo/db";
 
-const url = process.env.CORS_URL
+const url = process.env.CORS_URL;
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": `${url}`,
@@ -16,21 +16,22 @@ export async function OPTIONS() {
   });
 }
 export async function POST(request) {
-  await connectDB()
+  await connectDB();
   try {
     const body = await request.json();
-    const data = body.storedata
+    const data = body.storedata;
     const savedTo = new blog({
-      uuid:body.id,
+      uuid: body.id,
       blog_name: data.blog_name,
       blog_slug: data.blog_slug,
-      blog_content:data.blog_content,
+      blog_content: data.blog_content,
       blog_type: data.blog_type,
       blog_author: data.blog_author,
-      is_active:true,
-      is_aproved:false,
-    })
-    await savedTo.save()
+      author_id: data.id,
+      is_active: true,
+      is_aproved: false,
+    });
+    await savedTo.save();
     // console.log(savedTo)
 
     if (savedTo) {

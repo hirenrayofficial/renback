@@ -108,7 +108,7 @@ export async function POST(req, res) {
   });
 
   return NextResponse.json(
-    { message: " user login done", token: token, id: savdUser.uuid,name:savdUser.user_name },
+    { message: " user login done", token: token, id: savdUser.uuid,name:savdUser.user_name,role:savdUser.user_role },
     {
       status: 200,
       headers: CORS_HEADERS,
