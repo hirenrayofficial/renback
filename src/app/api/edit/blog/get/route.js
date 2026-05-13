@@ -28,7 +28,7 @@ export async function GET(req) {
     if (!id) {
       return NextResponse.json(
         { message: "User ID is required" },
-        { status: 400, headers: CORS_HEADERS } // 400 = Bad Request
+        { status: 400, headers: CORS_HEADERS }, // 400 = Bad Request
       );
     }
 
@@ -37,38 +37,38 @@ export async function GET(req) {
     if (!findUser) {
       return NextResponse.json(
         { message: "User not found" },
-        { status: 404, headers: CORS_HEADERS } // 404 = Not Found
+        { status: 404, headers: CORS_HEADERS }, // 404 = Not Found
       );
     }
+
 
     let getBlog;
 
     // 3. Admin Logic: See all pending blogs
     if (findUser.user_role === "admin") {
-      getBlog = await blog.find({ is_aproved: false });
-    } 
+      getBlog = await blog.find();
+    }
     // 4. Editor Logic: See only their own blogs
-    else {
+    else if (findUser.user_role === "editor") {
       getBlog = await blog.find({ author_id: findUser.uuid });
     }
 
     // 5. Success Return
     return NextResponse.json(
-      { 
-        message: "Blogs fetched successfully", 
-        blog: getBlog 
+      {
+        message: "Blogs fetched successfully",
+        blog: getBlog,
       },
       {
         status: 200, // 200 = OK
         headers: CORS_HEADERS,
-      }
+      },
     );
-
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
-      { status: 500, headers: CORS_HEADERS }
+      { status: 500, headers: CORS_HEADERS },
     );
   }
 }

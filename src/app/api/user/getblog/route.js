@@ -110,14 +110,14 @@ export async function GET(req) {
       const responseData = { getSlug };
 
       // 3. Store in Redis for 1 hour (3600 seconds)
-      await redis.set(cacheKey, responseData, { ex: 3600 });
+      await redis.set(cacheKey, responseData, { ex: 60 });
 
       return NextResponse.json(
         { message: "Get blog done", ...responseData },
         { status: 200, headers: CORS_HEADERS },
       );
     } else {
-      const getallblog = await blog.find({ is_active: true }).limit(6);
+      const getallblog = await blog.find({ is_active: true,is_aproved:true }).limit(6);
 
       const blogsWithImages = getallblog.map((item) => ({
         _id: item._id,
@@ -132,7 +132,7 @@ export async function GET(req) {
       const responseData = { blogs: blogsWithImages };
 
       // Store the list in Redis
-      await redis.set(cacheKey, responseData, { ex: 3600 });
+      await redis.set(cacheKey, responseData, { ex: 60 });
 
       return NextResponse.json(
         { message: "Get blog done", ...responseData },
