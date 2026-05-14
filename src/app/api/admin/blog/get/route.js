@@ -7,6 +7,13 @@ function corsHeaders(origin) {
     "Access-Control-Allow-Headers": "Content-Type",
   };
 }
+// function corsHeaders(origin) {
+//   return {
+//     "Access-Control-Allow-Origin": "https://https://roadtocode.blog.hirenray.rest",
+//     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+//     "Access-Control-Allow-Headers": "Content-Type",
+//   };
+// }
 export async function OPTIONS() {
   return new Response(null, {
     status: 200,

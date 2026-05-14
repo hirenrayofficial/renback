@@ -1,8 +1,8 @@
-import connectDB from "@/app/db/mongo/db";
 import blog from "@/app/db/schema/blog";
 import { NextResponse } from "next/server";
+import connectDB from "@/app/db/mongo/db";
 
-const url = process.env.CORS_URL
+const url = process.env.CORS_URL;
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": `${url}`,
@@ -15,23 +15,23 @@ export async function OPTIONS() {
     headers: CORS_HEADERS,
   });
 }
-
-
 export async function POST(request) {
-  await connectDB()
+  await connectDB();
   try {
     const body = await request.json();
-    const data = body.storedata
+    const data = body.storedata;
     const savedTo = new blog({
-      uuid:body.id,
+      uuid: body.id,
       blog_name: data.blog_name,
       blog_slug: data.blog_slug,
-      blog_content:data.blog_content,
+      blog_content: data.blog_content,
       blog_type: data.blog_type,
       blog_author: data.blog_author,
-      publish_date: data.publish_date,
-    })
-    await savedTo.save()
+      author_id: data.id,
+      is_active: true,
+      is_aproved: false,
+    });
+    await savedTo.save();
     // console.log(savedTo)
 
     if (savedTo) {
@@ -60,14 +60,4 @@ export async function POST(request) {
       },
     );
   }
-}
-
-export async function GET(request) {
-  return NextResponse.json(
-    { message: "GET method supported" },
-    {
-      status: 200,
-      headers: CORS_HEADERS,
-    },
-  );
 }
