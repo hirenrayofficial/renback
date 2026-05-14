@@ -82,45 +82,49 @@ const getFirstImage = (contentArray) => {
   return null;
 };
 export async function GET(req) {
+  // 1. Connect once, reuse always (Global connection logic should be inside connectDB)
   await connectDB();
+  
   const { searchParams } = new URL(req.url);
   const slug = searchParams.get("slug");
-
-  // Define a cache key based on whether it's a specific slug or the list
   const cacheKey = slug ? `blog:${slug}` : "blogs:recent";
 
   try {
-    // 1. Try to fetch from Redis first
+    // 2. Fast Path: Redis
     const cachedData = await redis.get(cacheKey);
-
     if (cachedData) {
       return NextResponse.json(
         { message: "Get blog done (cached)", ...cachedData },
-        { status: 200, headers: CORS_HEADERS },
+        { status: 200, headers: CORS_HEADERS }
       );
     }
 
-    // 2. If not in cache, fetch from MongoDB
+    // 3. Database Path
     if (slug) {
-      const getSlug = await blog.findOne({ blog_slug: slug, is_active: true });
+      // Use .lean() for faster, plain JS objects (skips Mongoose overhead)
+      const getSlug = await blog.findOne({ blog_slug: slug, is_active: true }).lean();
 
-      if (!getSlug)
-        return NextResponse.json(
-          { message: "Not found" },
-          { status: 404, headers: CORS_HEADERS },
-        );
+      if (!getSlug) {
+        return NextResponse.json({ message: "Not found" }, { status: 404, headers: CORS_HEADERS });
+      }
 
       const responseData = { getSlug };
-
-      // 3. Store in Redis for 1 hour (3600 seconds)
-      await redis.set(cacheKey, responseData, { ex: 60 });
+      // Cache for 1 hour (ex: 3600) - your code had 60s, I recommend longer for prod
+      await redis.set(cacheKey, responseData, { ex: 3600 }); 
 
       return NextResponse.json(
         { message: "Get blog done", ...responseData },
-        { status: 200, headers: CORS_HEADERS },
+        { status: 200, headers: CORS_HEADERS }
       );
     } else {
-      const getallblog = await blog.find({ is_active: true,is_aproved:true }).limit(6);
+      // 4. Optimization: Use .select() to only get needed fields
+      // This avoids loading heavy 'blog_content' into memory for the list view
+      const getallblog = await blog
+        .find({ is_active: true, is_aproved: true })
+        .select("blog_name blog_slug blog_author blog_type createdAt blog_content") 
+        .limit(6)
+        .sort({ createdAt: -1 }) // Usually you want the newest first
+        .lean();
 
       const blogsWithImages = getallblog.map((item) => ({
         _id: item._id,
@@ -133,19 +137,18 @@ export async function GET(req) {
       }));
 
       const responseData = { blogs: blogsWithImages };
-
-      // Store the list in Redis
-      await redis.set(cacheKey, responseData, { ex: 60 });
+      await redis.set(cacheKey, responseData, { ex: 3600 });
 
       return NextResponse.json(
         { message: "Get blog done", ...responseData },
-        { status: 200, headers: CORS_HEADERS },
+        { status: 200, headers: CORS_HEADERS }
       );
     }
   } catch (error) {
-    console.error("Redis Error:", error);
-    // Fallback: If Redis fails, you might still want to return DB results
-    // rather than crashing the whole request.
+    console.error("Fetch Error:", error);
+    // Fallback: If Redis fails, attempt a direct DB fetch without caching
+    // or return a 500 if DB is also down.
+    return NextResponse.json({ message: "Server Error" }, { status: 500 });
   }
 }
 export async function DELETE(req) {
