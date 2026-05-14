@@ -23,6 +23,8 @@ export async function POST(req) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   const blogid = searchParams.get("blogID");
+  const apType = searchParams.get("apType");
+  console.log(apType)
   if (!id) {
     return NextResponse.json(
       { message: "User ID is required" },
@@ -39,11 +41,21 @@ export async function POST(req) {
     );
   }
   if (findUser.user_role === "admin") {
-    const approved = await blog.findByIdAndUpdate(
-      blogid, // 1st arg: The ID
-      { $set: { is_aproved: true } }, // 2nd arg: The update
-      { new: true }, // 3rd arg: Options
-    );
+    let approved;
+    if (apType === "public") {
+      approved = await blog.findByIdAndUpdate(
+        blogid, // 1st arg: The ID
+        { $set: { is_aproved: false } }, // 2nd arg: The update
+        { new: true }, // 3rd arg: Options
+      );
+    } else if (apType === "unpublic") {
+      approved = await blog.findByIdAndUpdate(
+        blogid, // 1st arg: The ID
+        { $set: { is_aproved: true } }, // 2nd arg: The update
+        { new: true }, // 3rd arg: Options
+      );
+    }
+    console.log(approved)
     return NextResponse.json(
       {
         message: "Blogs Approved successfully",

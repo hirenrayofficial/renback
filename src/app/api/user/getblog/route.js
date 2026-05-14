@@ -25,7 +25,10 @@ export async function OPTIONS() {
 //   const slug = searchParams.get("slug");
 
 //   if (slug) {
-//     const getSlug = await blog.findOne({ blog_slug: slug ,is_active:true});
+//     const getSlug = await blog
+//       .findOne({ blog_slug: slug, is_active: true })
+//       .select("_id blog_name blog_content blog_slug blog_author createdAt blog_type");
+
 //     return NextResponse.json(
 //       { message: "Get blog done", getSlug },
 //       {
@@ -34,7 +37,7 @@ export async function OPTIONS() {
 //       },
 //     );
 //   } else {
-//     const getallblog = await blog.find({is_active:true}).limit(6);
+//     const getallblog = await blog.find({ is_active: true,is_aproved:true }).limit(6);
 
 //     const getFirstImage = (contentArray) => {
 //       if (!Array.isArray(contentArray)) return null;
@@ -53,7 +56,7 @@ export async function OPTIONS() {
 //       blog_name: item.blog_name,
 //       blog_slug: item.blog_slug,
 //       blog_author: item.blog_author,
-//       blog_type:item.blog_type,
+//       blog_type: item.blog_type,
 //       createdAt: item.createdAt,
 //       featured_image: getFirstImage(item.blog_content),
 //     }));
